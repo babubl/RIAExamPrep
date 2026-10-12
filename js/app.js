@@ -12,6 +12,10 @@ const shown = (qid, q) => optionOrder(qid, q);
 const letterOf = (qid, q, k) => L[shown(qid, q).indexOf(k)];
 const FRAMED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const refTxt = (r) => (r == null || r === '' ? '' : /^Ch/.test(String(r)) ? String(r) : `§${r}`);
+// Who publishes the site. Fill these in before going live on your own domain:
+// name shown on the Disclaimer page; registration states any SEBI/AMFI registration you hold (or that you hold none).
+const PUBLISHER = { name: '', contact: '', registration: '' };
+const REVIEWED = '12 October 2026';
 const TYPE = { multi: 'Statements', calc: 'Numerical', trap: 'Tweak / trap' };
 
 // ---------------- theme & nav ----------------
@@ -61,6 +65,8 @@ function route() {
     if (parts.length === 0) html = viewHome();
     else if (parts[0] === 'about') html = viewAbout();
     else if (parts[0] === 'calc') html = viewCalc();
+    else if (parts[0] === 'legal') html = viewLegal();
+    else if (parts[0] === 'privacy') html = viewPrivacy();
     else if (parts[0] === 'x' && PATTERNS[parts[1]]) {
       const ex = parts[1]; const sub = parts[2];
       if (!sub) html = viewHub(ex);
@@ -114,7 +120,7 @@ function viewHome() {
         <span class="stat"><span class="l">Accuracy</span><span class="v">${pct(s.acc)}</span></span>
         <span class="stat"><span class="l">Last mock</span><span class="v">${last ? `${Math.round(last.pct)}%` : '—'}</span></span>
       </span>
-      <span>${bar(r)}<span class="tiny">Readiness ${pct(r)} · weighted by module marks</span></span>
+      <span>${bar(r)}<span class="tiny">Readiness ${pct(r)} · weighted by module marks · indicative only</span></span>
       <span class="btn sm" style="align-self:flex-start">Open ${esc(p.short)}</span>
     </a>`;
   };
@@ -127,14 +133,17 @@ function viewHome() {
     ['Does SEBI registration expire?', 'No. The certificate stays valid until SEBI suspends or cancels it, as long as the periodic fees are paid. Your NISM certificates are valid for 3 years, so renew them before they lapse.'],
     ['Can I keep my job and advise part-time?', 'Yes, as a part-time investment adviser, if your other work is not related to securities and does not involve handling client money. You can have at most 75 clients and must use the words “part-time investment adviser” with clients.'],
     ['Can I advise NRIs?', 'Yes, and you need SEBI registration to do so. Only advice given exclusively to clients based outside India who are not NRIs or PIOs is outside the regulations.'],
-    ['How much can I earn?', 'You set your fees within SEBI’s caps for individual and HUF clients: up to 2.5% of assets under advice a year, or up to ₹1,51,000 a year per family on a fixed fee. For example, 80 families paying ₹30,000 a year is ₹24 lakh of fees before costs and GST.'],
+    ['How do RIAs charge?', 'Within SEBI’s caps for individual and HUF clients: up to 2.5% of assets under advice a year, or up to ₹1,51,000 a year per family on a fixed fee, with advance fees for at most one year. What you actually earn depends on your clients, costs and GST; SEBI does not set an income level.'],
+    ['How can an investor check that an adviser is registered?', 'SEBI publishes the list of registered investment advisers on its website (Intermediaries → Investment Advisers). A registered IA’s number starts with INA, and the adviser must show it on their website and communications. If someone offers investment advice for a fee without a registration number, do not deal with them.'],
+    ['Does Fiducia give investment advice?', 'No. Fiducia explains rules and prepares candidates for exams. It does not recommend any security, fund or product, and it has no SEBI or AMFI registration as a site. For advice on your own money, consult a SEBI-registered investment adviser.'],
   ];
   return `
   <section class="hero rhero"><div class="wrap grid">
     <div>
-      <span class="kicker">SEBI Registered Investment Adviser · career &amp; exam guide</span>
+      <span class="kicker">Independent career &amp; exam guide · education only</span>
       <h1 style="margin-top:8px">Become a SEBI Registered Investment Adviser.</h1>
-      <p class="lead">Advise clients for a fee, act only in their interest and take no commission. Fiducia explains how the RIA route works — eligibility, exams, registration and the rules of practice — and prepares you for NISM X&#8209;A and X&#8209;B with notes, mind maps, drills and full mock exams.</p>
+      <p class="lead">Learn how the SEBI Registered Investment Adviser route works — eligibility, exams, registration and the rules of practice — and prepare for NISM X&#8209;A and X&#8209;B with notes, mind maps, drills and full mock exams.</p>
+      <p class="small muted" style="margin:-8px 0 18px">Fiducia is an education site. It does not give investment advice and is not connected with SEBI, NISM, AMFI or BSE.</p>
       <div class="row"><a class="btn" href="#/x/xa">Start exam prep</a><a class="btn ghost" href="#/" data-act="goto" data-to="path">See the 5-step path</a></div>
       <div class="facts"><div><b>${totalQ}</b><span>practice questions</span></div><div><b>${totalCases}</b><span>case studies</span></div><div><b>42</b><span>mind maps</span></div><div><b>150</b><span>marks per mock</span></div></div>
     </div>
@@ -148,6 +157,7 @@ function viewHome() {
         <dt>Fee caps</dt><dd>2.5% of assets under advice, or ₹1,51,000 a year per family</dd>
         <dt>Income</dt><dd>Only from the client — no commissions or referral fees</dd>
       </dl>
+      <p class="tiny" style="margin:12px 0 0">Rules as summarised on ${REVIEWED}. Check <a href="https://www.sebi.gov.in" target="_blank" rel="noopener">sebi.gov.in</a> for the current position.</p>
     </div>
   </div></section>
 
@@ -177,7 +187,7 @@ function viewHome() {
   <section class="band tight" id="path"><div class="wrap">
     <div class="head"><span class="kicker">How to become an RIA</span><h2>The path in five steps</h2></div>
     <ol class="steps5">
-      <li><b>Meet the qualification</b><p class="small muted">A graduate or post-graduate degree, or a professional qualification, in finance, commerce, economics, accountancy, business management, banking, insurance or a similar field; or NISM’s one-year PGP (Investment Advisory); or a CFA charter.</p></li>
+      <li><b>Meet the qualification</b><p class="small muted">The IA Regulations set a minimum education requirement — as summarised in the NISM X-A workbook, a degree or professional qualification in finance, commerce, economics, accountancy, business management, banking, insurance or a similar field, NISM’s one-year PGP (Investment Advisory), or a CFA charter. SEBI relaxed this in December 2024; confirm the current text before applying.</p></li>
       <li><b>Pass NISM X-A and X-B</b><p class="small muted">Both papers: 150 marks, 3 hours, 60% to pass, 25% negative marking. <a href="#/x/xa">Prepare for X-A</a> · <a href="#/x/xb">X-B</a></p></li>
       <li><b>Arrange the deposit</b><p class="small muted">A scheduled-bank deposit (or liquid / overnight fund units) lien-marked to IAASB: ₹1 lakh for up to 150 clients.</p></li>
       <li><b>Apply to SEBI</b><p class="small muted">Apply on the SEBI Intermediary Portal. Individuals and firms pay ₹2,000 application fee and ₹3,000 registration fee.</p></li>
@@ -230,7 +240,7 @@ function viewHome() {
   <section class="band tight"><div class="wrap narrow">
     <div class="head"><span class="kicker">Questions people ask</span><h2>FAQ</h2></div>
     <div class="faq">${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
-    <p class="tiny" style="margin-top:22px">Sources: SEBI FAQs on Investment Advisers (August 2025); SEBI Guidelines for Investment Advisers (circular dated 8 January 2025); SEBI circular on deposits in liquid and overnight funds (12 August 2025); SEBI (Investment Advisers) Regulations, 2013 as summarised in the NISM X-A workbook (September 2026). Rules change — always check sebi.gov.in before you apply. This page is general information, not legal advice.</p>
+    <p class="tiny" style="margin-top:22px">Sources: SEBI FAQs on Investment Advisers (August 2025); SEBI Guidelines for Investment Advisers (circular dated 8 January 2025); SEBI circular on deposits in liquid and overnight funds (12 August 2025); SEBI (Investment Advisers) Regulations, 2013 as summarised in the NISM X-A workbook (September 2026). Last reviewed ${REVIEWED}. Rules change — always check sebi.gov.in before you apply. This page is general information, not legal or investment advice. <a href="#/legal">Disclaimer</a> · <a href="#/privacy">Privacy</a></p>
   </div></section>`;
 }
 ACTIONS.goto = (el) => { const t = document.getElementById(el.dataset.to); if (t) t.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); };
@@ -266,7 +276,7 @@ function viewHub(ex) {
     <div class="g4" style="margin-top:20px">
       <div class="tile stat"><span class="l">Pattern</span><span class="v">${p.totalMarks} marks</span><span class="tiny">${p.mcq} MCQs + ${p.caseSets.reduce((a, c) => a + c.count, 0)} cases · ${p.minutes} min</span></div>
       <div class="tile stat"><span class="l">Attempted</span><span class="v">${s.seen}/${s.total}</span><span class="tiny">${pct(s.acc)} accuracy</span></div>
-      <div class="tile stat"><span class="l">Readiness</span><span class="v">${pct(readiness(ex))}</span><span class="tiny">questions right ÷ bank, weighted</span></div>
+      <div class="tile stat"><span class="l">Readiness</span><span class="v">${pct(readiness(ex))}</span><span class="tiny">indicative · questions right ÷ bank</span></div>
       <div class="tile stat"><span class="l">Mocks taken</span><span class="v">${mocks.length}</span><span class="tiny">${mocks[0] ? `last ${mocks[0].score}/${mocks[0].max}` : 'none yet'}</span></div>
     </div>
   </div></section>
@@ -546,7 +556,7 @@ function viewMockLobby(ex) {
     <h2>Full mock — ${esc(p.code)}</h2>
     <div class="g2" style="margin-top:18px;align-items:start">
       <div class="card">
-        <span class="kicker">Exactly like the real paper</span>
+        <span class="kicker">Follows NISM’s published pattern</span>
         <table class="tbl" style="margin-top:8px"><tbody>
           <tr><td>Multiple-choice questions</td><td class="r">${p.mcq} × 1 mark</td><td class="r">${p.mcq}</td></tr>
           ${p.caseSets.map((c) => `<tr><td>${esc(c.label)}</td><td class="r">${c.count} × 5 × ${c.w}</td><td class="r">${c.count * 5 * c.w}</td></tr>`).join('')}
@@ -801,6 +811,7 @@ function viewCalc() {
     </div>
     <div class="card flat" style="margin-top:18px">
       <span class="kicker">Patterns that come up again and again</span>
+      <p class="tiny" style="margin:4px 0 0">Rates in these examples are exam-style assumptions to practise the arithmetic. They are not return expectations for any investment.</p>
       <div class="scroll" style="margin-top:8px;border:0"><table class="tbl"><thead><tr><th>Question</th><th>Excel</th></tr></thead><tbody>
         <tr><td>EMI on ₹40 lakh, 9%, 20 years</td><td><code>=PMT(9%/12, 240, 4000000)</code> → −35,989</td></tr>
         <tr><td>Today’s ₹50,000 expense in 20 years at 6% inflation</td><td><code>=FV(6%, 20, , -50000)</code> → 1,60,357</td></tr>
@@ -824,6 +835,58 @@ function bindHelpers() {
   };
   ['h_ret', 'h_inf', 'h_b', 'h_e', 'h_y', 'h_nom', 'h_m'].forEach((id) => $(`#${id}`).addEventListener('input', upd));
   upd();
+}
+
+
+// ---------------- Disclaimer & privacy ----------------
+function viewLegal() {
+  const pub = PUBLISHER.name
+    ? `<p>Fiducia is published by <b>${esc(PUBLISHER.name)}</b>${PUBLISHER.contact ? ` (${esc(PUBLISHER.contact)})` : ''}. ${esc(PUBLISHER.registration || '')}</p>`
+    : '<p>Fiducia is published by an individual as a free educational resource.</p>';
+  return `<section class="band tight"><div class="wrap narrow">
+    <div class="crumbs"><a href="#/">Home</a> / Disclaimer</div>
+    <h2>Disclaimer &amp; terms of use</h2>
+    <p class="tiny">Last updated ${REVIEWED}</p>
+    <div class="note red" style="margin:16px 0"><b>Education only — not investment advice.</b> Nothing on this site is a recommendation to buy, sell or hold any security, mutual fund scheme, insurance policy or other product, or advice on your personal finances.</div>
+    <article class="notes">
+      <h3>Who publishes this site</h3>
+      ${pub}
+      <p>The site does not provide investment advice, research recommendations, distribution of financial products, or any other activity that needs registration with SEBI, AMFI, IRDAI or PFRDA. Content is not tailored to any person and nobody is asked to share their portfolio or personal financial details.</p>
+      <h3>No affiliation</h3>
+      <p>Fiducia is independent. It is not affiliated with, endorsed by or connected to the Securities and Exchange Board of India (SEBI), the National Institute of Securities Markets (NISM), the Association of Mutual Funds in India (AMFI), BSE Ltd or IAASB. Their names are used only to describe the regulations and examinations discussed. Mock tests follow NISM’s published exam pattern; they are not NISM’s questions and do not reproduce live exam content.</p>
+      <h3>Content and accuracy</h3>
+      <ul>
+        <li>Notes are original summaries of the NISM workbooks (X-A version September 2026; X-B version December 2025) and of SEBI publications. All practice questions and case studies are original.</li>
+        <li>Regulations, tax rates and limits change. Figures reflect the sources as read on ${REVIEWED}. Always confirm with the current workbook, sebi.gov.in and nism.ac.in.</li>
+        <li>Numerical examples use assumed rates to practise calculations. They are not projections or expected returns of any investment.</li>
+        <li>Performance on this site does not predict your exam result.</li>
+        <li>Spotted an error? Please report it so it can be corrected.</li>
+      </ul>
+      <h3>Not legal advice</h3>
+      <p>Information about registration and compliance is general. Before applying to SEBI or changing how you run a practice, read the regulations and circulars yourself or consult a qualified professional.</p>
+      <h3>For investors</h3>
+      <p>To find or verify a SEBI-registered investment adviser, use the list of registered intermediaries on <a href="https://www.sebi.gov.in" target="_blank" rel="noopener">sebi.gov.in</a>. Complaints against registered intermediaries can be filed on SEBI SCORES and through the online dispute resolution (ODR) mechanism.</p>
+      <h3>Use of this site</h3>
+      <p>The site is provided free and “as is”. You may use it for personal study. Do not copy the question bank for commercial use without permission.</p>
+    </article>
+  </div></section>`;
+}
+function viewPrivacy() {
+  return `<section class="band tight"><div class="wrap narrow">
+    <div class="crumbs"><a href="#/">Home</a> / Privacy</div>
+    <h2>Privacy</h2>
+    <p class="tiny">Last updated ${REVIEWED}</p>
+    <article class="notes" style="margin-top:14px">
+      <h3>What we collect</h3>
+      <p>Nothing. There are no accounts, forms, cookies, analytics or advertising trackers. Fonts and scripts are served from this site itself.</p>
+      <h3>Your progress</h3>
+      <p>Answers, mock results, flashcard grades and theme choice are saved only in your own browser’s local storage, so they never leave your device. You can download a backup, restore it, or erase everything from the <a href="#/about">Exam pattern</a> page, or by clearing this site’s data in your browser.</p>
+      <h3>Hosting</h3>
+      <p>The site is served by its hosting provider, which may keep standard server logs (such as IP address and pages requested) under its own privacy policy.</p>
+      <h3>Changes</h3>
+      <p>If the site ever starts collecting personal data, this page will say what is collected, why, and how to withdraw consent before any collection begins, in line with the Digital Personal Data Protection Act, 2023.</p>
+    </article>
+  </div></section>`;
 }
 
 // ---------------- About / pattern ----------------

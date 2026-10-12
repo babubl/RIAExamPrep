@@ -4,14 +4,18 @@ A free, static site that explains how to become a **SEBI Registered Investment A
 
 - **X-A (Level 1)** and **X-B (Level 2)** — 40 chapter notes, ~960 original practice questions and 30 original case studies.
 - Drills for what makes these papers hard: **statement (I/II) questions**, **one-word “tweak” questions** and **Excel-style numericals**.
-- **Full mocks in the official pattern**: 90 MCQs drawn by module weight + caselets (X-A: 6 × 1-mark and 3 × 2-mark caselets; X-B: 6 × 2-mark cases) = 150 marks, 3-hour timer, question palette, mark-for-review, 25% negative marking, 60% pass mark, module-wise result and full answer review.
+- **Full mocks following NISM's published pattern**: 90 MCQs drawn by module weight + caselets (X-A: 6 × 1-mark and 3 × 2-mark caselets; X-B: 6 × 2-mark cases) = 150 marks, 3-hour timer, question palette, mark-for-review, 25% negative marking, 60% pass mark, module-wise result and full answer review.
 - **Mind maps** for every chapter (topics as branches, rules and limits as points) and a syllabus map per paper.
 - Flashcards, a formula & facts sheet per paper, “my mistakes” drill, and an **Excel-compatible TVM calculator** (FV, PV, PMT, NPER, RATE with the same sign convention and `type`).
 - Progress is stored only in the browser (with backup/restore).
 
 ## Sources and content policy
 
-Notes are original summaries written against the official workbooks — X-A version September 2026 and X-B version December 2025 (tax per Finance Act 2025) — with section references for every question. Nothing is reproduced from the workbooks’ own question sets or from paid mock providers. Exam pattern, module weights and validity are from the NISM certification pages. This project is not affiliated with NISM or SEBI.
+Notes are original summaries written against the NISM workbooks — X-A version September 2026 and X-B version December 2025 (tax per Finance Act 2025) — with section references for every question. Nothing is reproduced from the workbooks’ own question sets or from paid mock providers. Exam pattern, module weights and validity are from the NISM certification pages. This project is not affiliated with NISM or SEBI.
+
+## Before publishing on your own domain
+
+Fill in `PUBLISHER` at the top of `js/app.js` (name, contact and any SEBI/AMFI registration you hold, or a statement that you hold none). It appears on the Disclaimer page. Keep this education site separate from any advisory or distribution practice you run.
 
 ## Run locally
 

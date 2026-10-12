@@ -9,6 +9,7 @@ const L = 'ABCD';
 // Render options in display order; data-k always carries the ORIGINAL option index.
 const shown = (qid, q) => optionOrder(qid, q);
 const letterOf = (qid, q, k) => L[shown(qid, q).indexOf(k)];
+const FRAMED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const refTxt = (r) => (r == null || r === '' ? '' : /^Ch/.test(String(r)) ? String(r) : `§${r}`);
 const TYPE = { multi: 'Statements', calc: 'Numerical', trap: 'Tweak / trap' };
 
@@ -406,7 +407,7 @@ function viewFormulas(ex) {
   }).join('');
   return `<section class="band tight"><div class="wrap">
     <div class="crumbs"><a href="#/x/${ex}">${esc(p.short)}</a> / Formula &amp; facts sheet</div>
-    <div class="spread"><h2>${esc(p.short)} — formulas &amp; must-know facts</h2><button class="btn ghost sm no-print" data-act="print">Print / save as PDF</button></div>
+    <div class="spread"><h2>${esc(p.short)} — formulas &amp; must-know facts</h2>${FRAMED ? '' : '<button class="btn ghost sm no-print" data-act="print">Print / save as PDF</button>'}</div>
     <p class="muted">The last-day revision sheet: every chapter’s key numbers in one place.</p>
     <div class="g2" style="margin-top:16px">${mods}</div>
   </div></section>`;
@@ -709,7 +710,7 @@ function viewAbout() {
         <ul class="list small"><li>Notes are original summaries of each workbook chapter; they cite section numbers so you can go back to the book.</li><li>All ${allQuestions('xa').length + allQuestions('xb').length} chapter questions and ${BANK.xa.cases.length + BANK.xb.cases.length} case studies are original and written to the workbook — nothing is copied from the workbook’s own question sets or from paid mock providers.</li><li>Every numerical answer was computed, and explanations show the working (usually as an Excel formula).</li><li>Where the workbooks disagree with each other, questions stick to the paper being tested (e.g. X-B figures for X-B).</li></ul></div>
       <div class="card" id="data"><span class="kicker">Your data</span>
         <p class="small">Progress, mistakes, flashcard grades and mock results stay in this browser only (nothing is sent anywhere). Back up to move to another device.</p>
-        <div class="row"><button class="btn ghost sm" id="dExport">Download backup</button><label class="btn ghost sm" style="cursor:pointer">Restore backup<input type="file" id="dImport" accept="application/json" class="sr"></label><button class="btn danger sm" id="dReset">Reset all progress</button></div></div>
+        <div class="row">${FRAMED ? '' : '<button class="btn ghost sm" id="dExport">Download backup</button>'}<label class="btn ghost sm" style="cursor:pointer">Restore backup<input type="file" id="dImport" accept="application/json" class="sr"></label><button class="btn danger sm" id="dReset">Reset all progress</button></div></div>
     </div>
     <p class="tiny" style="margin-top:20px">Sources: NISM certification pages for Series X-A and X-B (pattern, weights, validity); NISM workbooks X-A (version September 2026) and X-B (version December 2025). Independent study aid; not affiliated with NISM or SEBI.</p>
   </div></section>`;

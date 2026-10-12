@@ -5,6 +5,7 @@ A free, static study site for the NISM **Investment Adviser** certifications:
 - **X-A (Level 1)** and **X-B (Level 2)** — 40 chapter notes, ~960 original practice questions and 30 original case studies.
 - Drills for what makes these papers hard: **statement (I/II) questions**, **one-word “tweak” questions** and **Excel-style numericals**.
 - **Full mocks in the official pattern**: 90 MCQs drawn by module weight + caselets (X-A: 6 × 1-mark and 3 × 2-mark caselets; X-B: 6 × 2-mark cases) = 150 marks, 3-hour timer, question palette, mark-for-review, 25% negative marking, 60% pass mark, module-wise result and full answer review.
+- **Mind maps** for every chapter (topics as branches, rules and limits as points) and a syllabus map per paper.
 - Flashcards, a formula & facts sheet per paper, “my mistakes” drill, and an **Excel-compatible TVM calculator** (FV, PV, PMT, NPER, RATE with the same sign convention and `type`).
 - Progress is stored only in the browser (with backup/restore).
 
@@ -27,6 +28,7 @@ js/engine.js        exam patterns, mock builder, scoring, option shuffling, TVM 
 js/bank.js          loads chapters, drills and cases; assigns stable question ids
 js/store.js         localStorage progress (guarded)
 js/app.js           hash router and all views
+js/mindmap.js       chapter and syllabus mind maps (HTML nodes + SVG connectors)
 data/xa, data/xb    c01–c20 chapter notes + questions, drills.js, cases.js
 tests/              node:test suites
 ```

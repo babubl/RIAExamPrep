@@ -1,6 +1,7 @@
 import { PATTERNS, mcqPlan, buildMock, scoreMock, shuffle, rng, optionOrder, FV, PV, PMT, NPER, RATE, realRate, effAnnual, cagr, fmtINR, paceSeconds } from './engine.js';
 import { BANK, lookup, chapter, caseById, allQuestions } from './bank.js';
 import { S, flush } from './store.js';
+import { renderMap, chapterGroups, bindMap } from './mindmap.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const main = $('#main');
@@ -69,6 +70,8 @@ function route() {
       else if (sub === 'cases') html = viewCases(ex);
       else if (sub === 'case') html = viewCase(ex, parts[3]);
       else if (sub === 'formulas') html = viewFormulas(ex);
+      else if (sub === 'map' && parts[3]) html = viewMap(ex, parts[3]);
+      else if (sub === 'map') html = viewMapIndex(ex);
       else if (sub === 'mock' && parts[3] === 'run') html = viewMockRun(ex);
       else if (sub === 'mock' && parts[3] === 'result') html = viewResult(ex, Number(parts[4] || 0));
       else if (sub === 'mock') html = viewMockLobby(ex);
@@ -123,9 +126,9 @@ function viewHome() {
     <div>
       <span class="kicker">NISM Investment Adviser certification · Level 1 &amp; Level 2</span>
       <h1 style="margin-top:8px">Practise for X&#8209;A and X&#8209;B the way the exam is set.</h1>
-      <p class="lead">Chapter notes, drills on the question types that cost the most marks, and full 150-mark mocks with a 3-hour timer and negative marking. Free, no sign-up.</p>
+      <p class="lead">Chapter notes and mind maps, drills on the question types that cost the most marks, and full 150-mark mocks with a 3-hour timer and negative marking. Free, no sign-up.</p>
       <div class="row"><a class="btn" href="#/x/xa">Start X-A · Level 1</a><a class="btn ghost" href="#/x/xb">Start X-B · Level 2</a></div>
-      <div class="facts"><div><b>${totalQ}</b><span>practice questions</span></div><div><b>${totalCases}</b><span>case studies</span></div><div><b>40</b><span>chapter notes</span></div><div><b>150</b><span>marks per mock</span></div></div>
+      <div class="facts"><div><b>${totalQ}</b><span>practice questions</span></div><div><b>${totalCases}</b><span>case studies</span></div><div><b>42</b><span>mind maps</span></div><div><b>150</b><span>marks per mock</span></div></div>
     </div>
     <div class="card flat">
       <span class="kicker">Where candidates lose marks</span>
@@ -145,7 +148,7 @@ function viewHome() {
   <section class="band tight" style="padding-bottom:48px"><div class="wrap">
     <h2 style="margin-bottom:14px">A study plan that works</h2>
     <ol class="steps4">
-      <li><b>Read the chapter notes</b><p class="small muted">Short points with the numbers you must remember, each tied to a workbook section.</p></li>
+      <li><b>See the map, then read</b><p class="small muted">Start each chapter with its mind map, then the notes with the numbers you must remember.</p></li>
       <li><b>Practise by chapter</b><p class="small muted">Instant feedback with the reasoning and the section to revisit.</p></li>
       <li><b>Fix weak spots</b><p class="small muted">Wrong answers collect in “My mistakes”. Module accuracy shows where marks leak.</p></li>
       <li><b>Sit full mocks</b><p class="small muted">Exact pattern, timer, question palette and negative marking. Aim for 70%+ before exam day.</p></li>
@@ -171,7 +174,7 @@ function viewHub(ex) {
         <span class="no">${c.ch}</span>
         <span class="t"><a href="#/x/${ex}/ch/${c.ch}">${esc(c.title)}</a><br><span class="tiny">${c.qs.length} questions · ${cs.seen} attempted${read ? ' · notes read ✓' : ''}</span></span>
         <span class="meter">${bar(cs.acc)}<span class="tiny">${cs.acc == null ? 'not started' : `${pct(cs.acc)} accuracy`}</span></span>
-        <span class="acts"><a class="btn ghost sm" href="#/x/${ex}/ch/${c.ch}">Notes</a><a class="btn sm" href="#/x/${ex}/practice/ch-${c.ch}">Practise</a></span>
+        <span class="acts"><a class="btn ghost sm" href="#/x/${ex}/ch/${c.ch}">Notes</a><a class="btn ghost sm" href="#/x/${ex}/map/${c.ch}">Map</a><a class="btn sm" href="#/x/${ex}/practice/ch-${c.ch}">Practise</a></span>
       </div>`;
     }).join('');
     return `<div class="module"><header><h3>Module ${m.id} · ${esc(m.name)}</h3><span class="row small muted"><span>${m.weight} marks</span><span>~${plan[m.id]} MCQs in a mock</span><span>${pct(ms.acc)} accuracy</span><a href="#/x/${ex}/practice/m-${m.id}">Module drill →</a></span></header>${rows}</div>`;
@@ -180,7 +183,7 @@ function viewHub(ex) {
   <section class="band tight"><div class="wrap">
     <div class="crumbs"><a href="#/">Home</a> / ${esc(p.short)}</div>
     <div class="spread"><div><span class="kicker">${esc(p.code)}</span><h2>${esc(p.name)}</h2></div>
-      <div class="row">${active ? `<a class="btn brass" href="#/x/${ex}/mock/run">Resume mock</a>` : ''}<a class="btn" href="#/x/${ex}/mock">Full mock exam</a></div></div>
+      <div class="row"><a class="btn ghost" href="#/x/${ex}/map">Mind maps</a>${active ? `<a class="btn brass" href="#/x/${ex}/mock/run">Resume mock</a>` : ''}<a class="btn" href="#/x/${ex}/mock">Full mock exam</a></div></div>
     <div class="g4" style="margin-top:20px">
       <div class="tile stat"><span class="l">Pattern</span><span class="v">${p.totalMarks} marks</span><span class="tiny">${p.mcq} MCQs + ${p.caseSets.reduce((a, c) => a + c.count, 0)} cases · ${p.minutes} min</span></div>
       <div class="tile stat"><span class="l">Attempted</span><span class="v">${s.seen}/${s.total}</span><span class="tiny">${pct(s.acc)} accuracy</span></div>
@@ -218,7 +221,7 @@ function viewNotes(ex, n) {
     <div class="crumbs"><a href="#/">Home</a> / <a href="#/x/${ex}">${esc(p.short)}</a> / Chapter ${c.ch}</div>
     <span class="kicker">Module ${c.module} · ${esc(m.name)}</span>
     <h2>Chapter ${c.ch}: ${esc(c.title)}</h2>
-    <div class="row" style="margin:14px 0 4px"><a class="btn" href="#/x/${ex}/practice/ch-${c.ch}">Practise ${c.qs.length} questions</a><a class="btn ghost" href="#/x/${ex}/cards/ch-${c.ch}">Flashcards</a></div>
+    <div class="row" style="margin:14px 0 4px"><a class="btn" href="#/x/${ex}/practice/ch-${c.ch}">Practise ${c.qs.length} questions</a><a class="btn ghost" href="#/x/${ex}/map/${c.ch}">Mind map</a><a class="btn ghost" href="#/x/${ex}/cards/ch-${c.ch}">Flashcards</a></div>
     <div class="g2" style="grid-template-columns:minmax(0,1fr) 320px;align-items:start;margin-top:18px" id="notesGrid">
       <article class="notes">
         ${c.sections.map((s) => `<h3>${esc(s.h)}</h3><ul>${s.pts.map((pt) => `<li>${esc(pt)}</li>`).join('')}</ul>`).join('')}
@@ -419,6 +422,39 @@ function viewFormulas(ex) {
   </div></section>`;
 }
 ACTIONS.print = () => window.print();
+
+
+// ---------------- Mind maps ----------------
+function mapAfter() { afterRender = () => { const host = $('#mapHost'); if (host) { const off = bindMap(host); cleanup = off; } }; }
+function viewMapIndex(ex) {
+  const p = PATTERNS[ex];
+  const groups = p.modules.map((m) => ({
+    title: `M${m.id} · ${m.name}`, ref: `${m.weight} marks`,
+    leaves: BANK[ex].chapters.filter((c) => c.module === m.id).map((c) => { const st = qStats(chIds(c)); return { label: `Ch ${c.ch} · ${c.title}`, detail: `${c.sections.length} topics · ${c.qs.length} questions${st.acc == null ? '' : ` · ${pct(st.acc)} accuracy`}`, href: `#/x/${ex}/map/${c.ch}` }; }),
+  }));
+  mapAfter();
+  return `<section class="band tight"><div class="wrap">
+    <div class="crumbs"><a href="#/">Home</a> / <a href="#/x/${ex}">${esc(p.short)}</a> / Mind maps</div>
+    <div class="spread"><div><span class="kicker">${esc(p.code)}</span><h2>Mind maps</h2></div><a class="btn ghost sm" href="#/x/${ex}/map/1">Start with Chapter 1</a></div>
+    <p class="muted" style="max-width:760px">The whole syllabus on one page: six modules with their marks, and every chapter under them. Open a chapter to see its own map — each topic as a branch, each rule, limit or formula as a point.</p>
+    <div id="mapHost">${renderMap({ title: p.code, sub: `${p.totalMarks} marks · 6 modules` }, groups)}</div>
+  </div></section>`;
+}
+function viewMap(ex, n) {
+  const c = chapter(ex, n); if (!c) return null;
+  const p = PATTERNS[ex]; const chs = BANK[ex].chapters; const i = chs.indexOf(c);
+  const prev = chs[i - 1]; const next = chs[i + 1];
+  const m = p.modules.find((mm) => mm.id === c.module);
+  mapAfter();
+  return `<section class="band tight"><div class="wrap">
+    <div class="crumbs"><a href="#/">Home</a> / <a href="#/x/${ex}">${esc(p.short)}</a> / <a href="#/x/${ex}/map">Mind maps</a> / Chapter ${c.ch}</div>
+    <span class="kicker">Module ${c.module} · ${esc(m.name)} · ${m.weight} marks</span>
+    <div class="spread"><h2>Chapter ${c.ch}: ${esc(c.title)}</h2>
+      <span class="row"><a class="btn ghost sm" href="#/x/${ex}/ch/${c.ch}">Read notes</a><a class="btn sm" href="#/x/${ex}/practice/ch-${c.ch}">Practise ${c.qs.length} questions</a></span></div>
+    <div id="mapHost">${renderMap({ title: `Ch ${c.ch} · ${c.title}`, sub: `${c.sections.length} topics` }, chapterGroups(c))}</div>
+    <div class="qnav">${prev ? `<a class="btn ghost" href="#/x/${ex}/map/${prev.ch}">← Ch ${prev.ch} map</a>` : '<span></span>'}${next ? `<a class="btn ghost" href="#/x/${ex}/map/${next.ch}">Ch ${next.ch} map →</a>` : `<a class="btn ghost" href="#/x/${ex}/map">All maps</a>`}</div>
+  </div></section>`;
+}
 
 // ---------------- Mock exam ----------------
 let M = null; let tick = null;

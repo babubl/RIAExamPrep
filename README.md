@@ -22,7 +22,7 @@ node --test tests/*.test.mjs  # bank integrity, exam pattern, scoring, TVM maths
 ## Structure
 
 ```
-index.html          styles + shell (same look as the RIA site)
+index.html          styles + shell (CBT-style design, self-hosted IBM Plex fonts)
 js/engine.js        exam patterns, mock builder, scoring, option shuffling, TVM maths (pure, tested)
 js/bank.js          loads chapters, drills and cases; assigns stable question ids
 js/store.js         localStorage progress (guarded)

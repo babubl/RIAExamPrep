@@ -40,6 +40,7 @@ function readiness(ex) {
 }
 const pct = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`);
 const barCls = (x) => (x == null ? '' : x >= 0.7 ? 'ok' : x < 0.5 ? 'bad' : '');
+const pbar = (x) => `<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(x * 100)}"><i style="width:${Math.round(x * 100)}%"></i></div>`;
 const bar = (x) => `<div class="bar ${barCls(x)}" role="img" aria-label="${pct(x)}"><i style="width:${x == null ? 0 : Math.round(x * 100)}%"></i></div>`;
 
 // ---------------- router ----------------
@@ -100,51 +101,54 @@ function viewHome() {
   const card = (ex) => {
     const p = PATTERNS[ex]; const s = examStats(ex); const r = readiness(ex);
     const last = S.get().mocks.find((m) => m.exam === ex);
+    const active = S.get().active && S.get().active.exam === ex;
     return `<a class="card examcard" href="#/x/${ex}">
-      <span class="kicker">${esc(p.code)}</span>
+      <span class="spread"><span class="kicker">${esc(p.code)}</span>${active ? '<span class="pill ok">Mock in progress</span>' : ''}</span>
       <span class="code">${esc(p.name)}</span>
-      <span class="muted small">${p.mcq} MCQs + ${p.caseSets.map((c) => `${c.count} cases × 5 Qs × ${c.w} mark${c.w > 1 ? 's' : ''}`).join(' + ')} · ${p.totalMarks} marks · ${p.minutes / 60} hours · pass ${p.passPct}% · −${p.negative * 100}% for wrong answers</span>
+      <span class="small muted">${p.modules.length} modules · 20 chapters · ${s.total} questions · ${BANK[ex].cases.length} case studies</span>
       <span class="g3" style="gap:10px">
-        <span class="stat"><span class="l">Questions done</span><span class="v">${s.seen}/${s.total}</span></span>
+        <span class="stat"><span class="l">Attempted</span><span class="v">${s.seen}</span></span>
         <span class="stat"><span class="l">Accuracy</span><span class="v">${pct(s.acc)}</span></span>
         <span class="stat"><span class="l">Last mock</span><span class="v">${last ? `${Math.round(last.pct)}%` : '—'}</span></span>
       </span>
-      <span>${bar(r)}<span class="tiny">Readiness (weighted by module marks): ${pct(r)}</span></span>
-      <span class="btn sm" style="align-self:flex-start">Open ${esc(p.short)} →</span>
+      <span>${bar(r)}<span class="tiny">Readiness ${pct(r)} · weighted by module marks</span></span>
+      <span class="btn sm" style="align-self:flex-start">Open ${esc(p.short)}</span>
     </a>`;
   };
   const totalQ = allQuestions('xa').length + allQuestions('xb').length;
   const totalCases = BANK.xa.cases.length + BANK.xb.cases.length;
+  const pat = (ex) => { const p = PATTERNS[ex]; return `<tr><th scope="row">${esc(p.short)}</th><td class="r">${p.mcq}</td><td>${p.caseSets.map((c) => `${c.count} × 5 Qs × ${c.w}`).join(' + ')}</td><td class="r">${p.totalMarks}</td><td class="r">${p.minutes}</td><td class="r">${p.passPct}%</td><td class="r">−${p.negative * 100}%</td></tr>`; };
   return `
   <section class="hero"><div class="wrap grid">
     <div>
-      <span class="kicker">NISM Investment Adviser certification</span>
-      <h1>Prepare the way the exam <em class="s">actually</em> tests you.</h1>
-      <p class="lead">Short notes for every workbook chapter, then practice built around what makes these papers hard: multi-statement true/false questions, one-word “tweaks” that flip an answer, Excel-style numericals and five-question caselets — finished off with full 150-mark timed mocks that apply negative marking.</p>
-      <div class="row"><a class="btn" href="#/x/xa">Start X-A (Level 1)</a><a class="btn ghost" href="#/x/xb">Start X-B (Level 2)</a></div>
-      <div class="facts"><span>${totalQ} original questions</span><span>${totalCases} case studies</span><span>40 chapter notes</span><span>Free · no sign-up</span></div>
+      <span class="kicker">NISM Investment Adviser certification · Level 1 &amp; Level 2</span>
+      <h1 style="margin-top:8px">Practise for X&#8209;A and X&#8209;B the way the exam is set.</h1>
+      <p class="lead">Chapter notes, drills on the question types that cost the most marks, and full 150-mark mocks with a 3-hour timer and negative marking. Free, no sign-up.</p>
+      <div class="row"><a class="btn" href="#/x/xa">Start X-A · Level 1</a><a class="btn ghost" href="#/x/xb">Start X-B · Level 2</a></div>
+      <div class="facts"><div><b>${totalQ}</b><span>practice questions</span></div><div><b>${totalCases}</b><span>case studies</span></div><div><b>40</b><span>chapter notes</span></div><div><b>150</b><span>marks per mock</span></div></div>
     </div>
-    <div class="card">
-      <span class="kicker">Today’s drill</span>
-      <h3 style="margin:6px 0 10px">Three ways the paper trips people up</h3>
-      <ul class="list">
-        <li><b>Statement questions</b> — “Statement I … Statement II …”: judge each statement on its own before looking at the options. <a href="#/x/xa/practice/multi">Drill X-A</a> · <a href="#/x/xb/practice/multi">X-B</a></li>
-        <li><b>Tweaks</b> — a single word (“always”, “only”, “NOT”, a changed limit) decides the answer. <a href="#/x/xa/practice/trap">Drill X-A</a> · <a href="#/x/xb/practice/trap">X-B</a></li>
-        <li><b>Numericals</b> — set them up the Excel way (PV, FV, PMT, RATE). <a href="#/x/xa/practice/calc">Drill X-A</a> · <a href="#/x/xb/practice/calc">X-B</a> · <a href="#/calc">Calculator</a></li>
+    <div class="card flat">
+      <span class="kicker">Where candidates lose marks</span>
+      <ul class="list" style="margin-top:6px">
+        <li><b>Statement questions.</b> Judge Statement I and II separately before reading the options. <span class="row" style="gap:12px;margin-top:2px"><a href="#/x/xa/practice/multi">X-A drill</a><a href="#/x/xb/practice/multi">X-B drill</a></span></li>
+        <li><b>Tweaked wording.</b> One word such as NOT, only or always changes the answer. <span class="row" style="gap:12px;margin-top:2px"><a href="#/x/xa/practice/trap">X-A drill</a><a href="#/x/xb/practice/trap">X-B drill</a></span></li>
+        <li><b>Numericals.</b> Set them up as Excel functions; the test centre gives you a spreadsheet. <span class="row" style="gap:12px;margin-top:2px"><a href="#/x/xa/practice/calc">X-A drill</a><a href="#/x/xb/practice/calc">X-B drill</a><a href="#/calc">Calculator</a></span></li>
+        <li><b>Guessing.</b> A wrong answer costs 25% of its marks. Skip unless you can rule out two options.</li>
       </ul>
     </div>
   </div></section>
-  <section class="band"><div class="wrap">
-    <div class="head"><span class="kicker">Choose your paper</span><h2>Two levels, one style of preparation</h2></div>
+  <section class="band tight"><div class="wrap">
+    <div class="spread" style="margin-bottom:14px"><h2>Choose your paper</h2><a class="small" href="#/about">Full exam pattern</a></div>
     <div class="g2">${card('xa')}${card('xb')}</div>
+    <div class="scroll" style="margin-top:16px"><table class="tbl"><thead><tr><th>Paper</th><th class="r">MCQs</th><th>Case studies</th><th class="r">Marks</th><th class="r">Minutes</th><th class="r">Pass</th><th class="r">Wrong answer</th></tr></thead><tbody>${pat('xa')}${pat('xb')}</tbody></table></div>
   </div></section>
-  <section class="band alt"><div class="wrap">
-    <div class="head"><span class="kicker">A study plan that works</span><h2>Read → drill → review mistakes → mock</h2></div>
-    <ol class="g4" style="list-style:none;padding:0;margin:0">
-      <li class="tile"><b>1 · Read the notes</b><p class="small muted">Each chapter is condensed into short points with the numbers you must remember. Read the workbook alongside.</p></li>
-      <li class="tile"><b>2 · Practise by chapter</b><p class="small muted">Instant feedback with the reasoning and the workbook section to revisit.</p></li>
-      <li class="tile"><b>3 · Fix weak spots</b><p class="small muted">Your mistakes form their own drill; module accuracy shows where marks leak.</p></li>
-      <li class="tile"><b>4 · Sit full mocks</b><p class="small muted">Exact pattern, 3-hour timer, palette, mark-for-review and −25% marking.</p></li>
+  <section class="band tight" style="padding-bottom:48px"><div class="wrap">
+    <h2 style="margin-bottom:14px">A study plan that works</h2>
+    <ol class="steps4">
+      <li><b>Read the chapter notes</b><p class="small muted">Short points with the numbers you must remember, each tied to a workbook section.</p></li>
+      <li><b>Practise by chapter</b><p class="small muted">Instant feedback with the reasoning and the section to revisit.</p></li>
+      <li><b>Fix weak spots</b><p class="small muted">Wrong answers collect in “My mistakes”. Module accuracy shows where marks leak.</p></li>
+      <li><b>Sit full mocks</b><p class="small muted">Exact pattern, timer, question palette and negative marking. Aim for 70%+ before exam day.</p></li>
     </ol>
   </div></section>`;
 }
@@ -193,8 +197,8 @@ function viewHub(ex) {
       <a class="drill" href="#/x/${ex}/practice/wrong"><span class="n">${wrongN}</span><b>My mistakes</b><span>Questions you last got wrong.</span></a>
       <a class="drill" href="#/x/${ex}/cases"><span class="n">${BANK[ex].cases.length}</span><b>Case studies</b><span>Five linked questions per case.</span></a>
       <a class="drill" href="#/x/${ex}/practice/random"><span class="n">25</span><b>Quick mixed test</b><span>Random questions across the paper.</span></a>
-      <a class="drill" href="#/x/${ex}/cards/all"><span class="n">⟲</span><b>Flashcards</b><span>Flip, self-grade, repeat the hard ones.</span></a>
-      <a class="drill" href="#/x/${ex}/formulas"><span class="n">ƒ</span><b>Formula &amp; facts sheet</b><span>Every key number on one page.</span></a>
+      <a class="drill" href="#/x/${ex}/cards/all"><span class="n">40</span><b>Flashcards</b><span>Flip, self-grade, repeat the hard ones.</span></a>
+      <a class="drill" href="#/x/${ex}/formulas"><span class="n">20</span><b>Formula &amp; facts sheet</b><span>Every key number on one page.</span></a>
     </div>
   </div></section>
   <section class="band tight"><div class="wrap">
@@ -268,7 +272,7 @@ function viewPractice(ex, scope) {
   const ok = chosen === q.a;
   return `<section class="band tight"><div class="wrap narrow">
     <div class="crumbs"><a href="#/">Home</a> / <a href="#/x/${ex}">${esc(p.short)}</a> / ${esc(P.title)}</div>
-    <div class="progress"><span>${P.i + 1} / ${P.list.length}</span>${bar((P.i + (answered ? 1 : 0)) / P.list.length)}<span>${P.right} right</span></div>
+    <div class="progress"><span>${P.i + 1} / ${P.list.length}</span>${pbar((P.i + (answered ? 1 : 0)) / P.list.length)}<span>${P.right} right</span></div>
     <div class="qcard">
       <div class="qmeta"><span class="pill info">Ch ${c.ch} · ${esc(c.title)}</span>${q.t ? `<span class="pill ${q.t === 'trap' ? 'act' : q.t === 'calc' ? 'ok' : 'mark'}">${TYPE[q.t]}</span>` : ''}${q.d === 3 ? '<span class="pill act">Tough</span>' : ''}</div>
       <p class="qtext">${esc(q.q)}</p>
@@ -302,7 +306,9 @@ ACTIONS.pprev = () => { if (P.i > 0) { P.i--; keepScroll = false; route(); } };
 ACTIONS.prestart = () => { const { ex, scope } = P; P = null; location.hash = `#/x/${ex}/practice/${scope}`; route(); };
 
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { const m = $('#mmodal'); const d = $('#mdrawer'); if (m && m.innerHTML) m.innerHTML = ''; else if (d && d.innerHTML) d.innerHTML = ''; return; }
   if (e.target.matches('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+  if ($('#mmodal') && $('#mmodal').innerHTML) return;
   const h = location.hash;
   const k = e.key.toLowerCase();
   const idx = { 1: 0, 2: 1, 3: 2, 4: 3, a: 0, b: 1, c: 2, d: 3 }[k];
@@ -379,7 +385,7 @@ function viewCards(ex, scope) {
   const { q, chapter: c } = lookup(C.ids[C.i]);
   return `<section class="band tight"><div class="wrap">
     <div class="crumbs"><a href="#/x/${ex}">${esc(p.short)}</a> / Flashcards${scope.startsWith('ch-') ? ` · Chapter ${scope.slice(3)}` : ''}</div>
-    <div class="progress narrow" style="margin:0 auto 14px"><span>${C.i + 1} / ${C.ids.length}</span>${bar(C.i / C.ids.length)}</div>
+    <div class="progress narrow" style="margin:0 auto 14px"><span>${C.i + 1} / ${C.ids.length}</span>${pbar(C.i / C.ids.length)}</div>
     <div class="flash ${C.flipped ? 'flipped' : ''}" id="flash">
       <div class="inner" data-act="flip" role="button" tabindex="0" aria-label="Flip card">
         <div class="face front"><span class="kicker">Ch ${c.ch} · ${esc(c.title)}</span><p class="qtext" style="margin-top:10px">${esc(q.q)}</p><p class="tiny">Answer in your head, then tap to flip (or press Space).</p></div>
@@ -453,7 +459,7 @@ ACTIONS.mstart = (el) => {
   const seen = new Set([...qKeys, ...qKeys.map((k) => k.replace(/-\d+$/, '')), ...S.get().mocks.flatMap((m) => m.cases || [])]);
   const mock = buildMock(p, BANK[ex], { seed: Date.now() % 2147483647, seen });
   const now = Date.now();
-  S.setActive({ ...mock, answers: {}, marked: {}, start: now, endsAt: now + p.minutes * 60000, idx: 0 }); flush();
+  S.setActive({ ...mock, answers: {}, marked: {}, visited: {}, start: now, endsAt: now + p.minutes * 60000, idx: 0 }); flush();
   M = null; location.hash = `#/x/${ex}/mock/run`;
 };
 const itemKey = (it) => lookup(it.qid).q.a;
@@ -461,41 +467,54 @@ function viewMockRun(ex) {
   const a = S.get().active;
   if (!a || a.exam !== ex) { location.hash = `#/x/${ex}/mock`; return ''; }
   M = a; const p = PATTERNS[ex];
+  M.visited ||= {}; M.visited[M.idx] = true;
   const it = M.items[M.idx]; const { q } = lookup(it.qid);
   const nMcq = M.items.filter((x) => x.kind === 'mcq').length;
-  const sec = it.kind === 'mcq' ? `Section A · Multiple choice · 1 mark` : `Section ${it.marks === 1 ? 'B' : (ex === 'xa' ? 'C' : 'B')} · Case study · ${it.marks} mark${it.marks > 1 ? 's' : ''}`;
-  const cs = it.kind === 'case' ? caseById(ex, it.caseId) : null;
-  const answered = Object.keys(M.answers).length; const marked = Object.values(M.marked).filter(Boolean).length;
-  const palette = (from, to, label) => `<p class="tiny" style="margin:6px 0 0"><b>${label}</b></p><div class="pal">${M.items.slice(from, to).map((x, j) => { const i = from + j; return `<button data-act="mgo" data-i="${i}" class="${M.answers[i] !== undefined ? 'ans' : ''} ${M.marked[i] ? 'mk' : ''} ${i === M.idx ? 'cur' : ''}" aria-label="Question ${i + 1}">${i + 1}</button>`; }).join('')}</div>`;
   const caseRanges = []; let start = nMcq;
   while (start < M.items.length) { const cid = M.items[start].caseId; let end = start; while (end < M.items.length && M.items[end].caseId === cid) end++; caseRanges.push([start, end, M.items[start].marks]); start = end; }
+  const cr = caseRanges.find((r) => M.idx >= r[0] && M.idx < r[1]);
+  const caseNo = cr ? caseRanges.indexOf(cr) + 1 : 0;
+  const sec = it.kind === 'mcq' ? 'Section A · Multiple choice' : `Case study ${caseNo} of ${caseRanges.length}`;
+  const cs = it.kind === 'case' ? caseById(ex, it.caseId) : null;
+  const st = mockCounts();
+  const cls = (i) => [M.answers[i] !== undefined ? 'ans' : (M.visited[i] ? 'vis' : ''), M.marked[i] ? 'mk' : '', i === M.idx ? 'cur' : ''].join(' ').trim();
+  const palette = (from, to, label) => `<p class="tiny" style="margin:10px 0 0"><b>${label}</b></p><div class="pal">${M.items.slice(from, to).map((x, j) => { const i = from + j; return `<button data-act="mgo" data-i="${i}" class="${cls(i)}" aria-label="Question ${i + 1}${M.answers[i] !== undefined ? ', answered' : ''}${M.marked[i] ? ', marked for review' : ''}">${i + 1}</button>`; }).join('')}</div>`;
+  const palOpen = M.palOpen ?? matchMedia('(min-width: 981px)').matches;
   afterRender = startTimer;
   cleanup = () => { clearInterval(tick); };
   return `<div class="exambar"><div class="wrap spread">
-      <span class="row"><b>${esc(p.short)} mock</b><span class="tiny">${answered}/${M.items.length} answered · ${marked} marked</span></span>
-      <span class="row"><button class="btn ghost sm" data-act="mcalc">Calculator</button><span class="timer" id="timer" aria-live="off">${fmtLeft(M.endsAt - Date.now())}</span><button class="btn brass sm" data-act="msubmit">Submit</button></span>
+      <span class="row" style="gap:4px 14px"><b>${esc(p.code)} · Mock</b><span class="tiny">${st.ans}/${M.items.length} answered · ${st.mk} marked</span></span>
+      <span class="row"><button class="btn ghost sm" data-act="mcalc">Calculator</button><span class="timer" id="timer" role="timer" aria-label="Time left">${fmtLeft(M.endsAt - Date.now())}</span><button class="btn brass sm" data-act="msubmit">Submit</button></span>
     </div></div>
     <div class="wrap exam">
-      <div>
-        <div class="qmeta"><span class="pill info">Q ${M.idx + 1} of ${M.items.length}</span><span>${sec}</span></div>
-        ${cs ? `<div class="casebox"><h4>${esc(cs.title)} <span class="tiny">(questions ${caseRanges.find((r) => M.idx >= r[0] && M.idx < r[1])[0] + 1}–${caseRanges.find((r) => M.idx >= r[0] && M.idx < r[1])[1]})</span></h4><p>${esc(cs.text)}</p></div>` : ''}
+      <div style="min-width:0">
+        ${cs ? `<div class="casebox"><h4>${esc(cs.title)} <span class="tiny">· questions ${cr[0] + 1}–${cr[1]}</span></h4><p>${esc(cs.text)}</p></div>` : ''}
         <div class="qcard">
+          <div class="qhead"><b>Question ${M.idx + 1}</b><span class="row" style="gap:6px"><span class="pill info">${sec}</span><span class="pill blue">+${it.marks} / −${it.marks * p.negative}</span>${M.marked[M.idx] ? '<span class="pill mark">Marked</span>' : ''}</span></div>
           <p class="qtext">${esc(q.q)}</p>
           <ul class="opts">${shown(it.qid, q).map((k, pos) => `<li><button class="opt" data-act="manswer" data-k="${k}" data-pos="${pos}" aria-pressed="${M.answers[M.idx] === k}"><span class="k">${L[pos]}</span><span>${esc(q.o[k])}</span></button></li>`).join('')}</ul>
           <div class="qnav">
-            <span class="row"><button class="btn ghost sm" data-act="mprev" ${M.idx === 0 ? 'disabled' : ''}>← Previous</button><button class="btn ghost sm" data-act="mclear">Clear answer</button></span>
-            <span class="row"><button class="btn ghost sm" data-act="mmark">${M.marked[M.idx] ? 'Unmark' : 'Mark for review'}</button><button class="btn sm" data-act="mnext">${M.idx + 1 === M.items.length ? 'Last question' : 'Save &amp; next →'}</button></span>
+            <span class="row"><button class="btn ghost sm" data-act="mprev" ${M.idx === 0 ? 'disabled' : ''}>← Previous</button><button class="btn ghost sm" data-act="mclear" ${M.answers[M.idx] === undefined ? 'disabled' : ''}>Clear response</button></span>
+            <span class="row"><button class="btn ghost sm" data-act="mmark">${M.marked[M.idx] ? 'Unmark' : 'Mark for review &amp; next'}</button><button class="btn sm" data-act="mnext" ${M.idx + 1 === M.items.length ? 'disabled' : ''}>Next →</button></span>
           </div>
         </div>
+        <p class="tiny kbd-tip" style="margin-top:10px">Keys: 1–4 or A–D to answer · ← → to move.</p>
       </div>
       <aside class="palette card flat">
-        <div class="legend"><span><i class="a"></i>Answered</span><span><i class="m"></i>Marked</span><span><i></i>Not answered</span></div>
-        ${palette(0, nMcq, `Section A · MCQs (1–${nMcq})`)}
-        ${caseRanges.map((r, j) => palette(r[0], r[1], `Case ${j + 1} · ${r[2]} mark${r[2] > 1 ? 's' : ''} each`)).join('')}
-        <button class="btn brass sm" style="width:100%" data-act="msubmit">Submit exam</button>
+        <details ${palOpen ? 'open' : ''} id="palDetails"><summary>Question palette <span class="tiny">${st.ans} answered · ${st.notAns} not answered · ${st.notVis} not visited</span></summary>
+        <div class="legend" style="margin-top:10px"><span><i class="a"></i>Answered</span><span><i class="v"></i>Not answered</span><span><i class="m"></i>Marked</span><span><i class="am"></i>Answered &amp; marked</span><span><i></i>Not visited</span></div>
+        ${palette(0, nMcq, `Section A · MCQs 1–${nMcq} · 1 mark`)}
+        ${caseRanges.map((r, j) => palette(r[0], r[1], `Case ${j + 1} · Q${r[0] + 1}–${r[1]} · ${r[2]} mark${r[2] > 1 ? 's' : ''} each`)).join('')}
+        </details>
+        <button class="btn brass sm" style="width:100%;margin-top:8px" data-act="msubmit">Submit exam</button>
       </aside>
     </div>
     <div id="mmodal"></div><div id="mdrawer"></div>`;
+}
+function mockCounts() {
+  const n = M.items.length; let ans = 0; let mk = 0; let vis = 0;
+  for (let i = 0; i < n; i++) { if (M.answers[i] !== undefined) ans++; if (M.marked[i]) mk++; if (M.visited && M.visited[i]) vis++; }
+  return { ans, mk, notAns: Math.max(0, vis - ans), notVis: n - Math.max(vis, ans) };
 }
 function startTimer() {
   clearInterval(tick);
@@ -513,10 +532,14 @@ ACTIONS.mnext = () => mockGo(Math.min(M.idx + 1, M.items.length - 1));
 ACTIONS.mprev = () => mockGo(M.idx - 1);
 ACTIONS.manswer = (el) => { const k = Number(el.dataset.k); M.answers[M.idx] = k; S.setActive(M); keepScroll = true; route(); };
 ACTIONS.mclear = () => { delete M.answers[M.idx]; S.setActive(M); keepScroll = true; route(); };
-ACTIONS.mmark = () => { M.marked[M.idx] = !M.marked[M.idx]; S.setActive(M); if (M.marked[M.idx] && M.idx + 1 < M.items.length) M.idx++; S.setActive(M); route(); };
+ACTIONS.mmark = () => { M.marked[M.idx] = !M.marked[M.idx]; if (M.marked[M.idx] && M.idx + 1 < M.items.length) M.idx++; S.setActive(M); route(); };
+main.addEventListener('toggle', (e) => { if (e.target.id === 'palDetails' && M) { M.palOpen = e.target.open; } }, true);
 ACTIONS.msubmit = () => {
-  const un = M.items.length - Object.keys(M.answers).length; const mk = Object.values(M.marked).filter(Boolean).length;
-  $('#mmodal').innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="card"><h3 id="mt">Submit the exam?</h3><p class="muted">${un} unanswered · ${mk} marked for review · ${fmtLeft(M.endsAt - Date.now())} left.</p><p class="small">Unanswered questions score zero; wrong answers lose ${PATTERNS[M.exam].negative * 100}% of their marks.</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-act="mcancel">Keep going</button><button class="btn brass" data-act="mfinish">Submit now</button></div></div></div>`;
+  const st = mockCounts(); const left = M.endsAt - Date.now();
+  $('#mmodal').innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="card"><h3 id="mt">Submit the exam?</h3>
+    <table class="tbl" style="margin:12px 0"><tbody><tr><td>Answered</td><td class="r">${st.ans}</td></tr><tr><td>Not answered (visited)</td><td class="r">${st.notAns}</td></tr><tr><td>Not visited</td><td class="r">${st.notVis}</td></tr><tr><td>Marked for review</td><td class="r">${st.mk}</td></tr><tr><td>Time left</td><td class="r">${fmtLeft(left)}</td></tr></tbody></table>
+    <p class="small muted">You cannot change answers after submitting. Unanswered questions score zero; wrong answers lose ${PATTERNS[M.exam].negative * 100}% of their marks.</p>
+    <div class="row" style="justify-content:flex-end"><button class="btn ghost" data-act="mcancel">Back to exam</button><button class="btn brass" data-act="mfinish">Submit now</button></div></div></div>`;
   $('#mmodal button[data-act="mcancel"]').focus();
 };
 ACTIONS.mcancel = () => { $('#mmodal').innerHTML = ''; };
@@ -549,7 +572,7 @@ function viewResult(ex, i) {
     const acc = b.attempted ? b.correct / b.attempted : null;
     return `<tr><td>M${mod.id} · ${esc(mod.name)}</td><td class="r">${b.n}</td><td class="r">${Math.round(b.marks * 100) / 100} / ${b.max}</td><td style="min-width:120px">${bar(acc)}<span class="tiny">${pct(acc)}</span></td><td class="r"><a href="#/x/${ex}/practice/m-${mod.id}">Drill</a></td></tr>`;
   }).join('');
-  const weakest = p.modules.map((mod) => ({ mod, b: m.byModule[mod.id] })).filter((x) => x.b && x.b.max).sort((a, b) => a.b.marks / a.b.max - b.b.marks / b.b.max).slice(0, 2);
+  const weakest = p.modules.map((mod) => ({ mod, b: m.byModule[mod.id] })).filter((x) => x.b && x.b.max && x.b.marks / x.b.max < 0.7).sort((a, b) => a.b.marks / a.b.max - b.b.marks / b.b.max).slice(0, 2);
   const f = R.filter;
   const list = m.items.map((it, k) => ({ it, k })).filter(({ it, k }) => {
     const a = m.answers[k]; const ok = a === itemKey(it);
@@ -571,7 +594,7 @@ function viewResult(ex, i) {
       <div style="flex:1;min-width:240px">
         <span class="pill ${m.pass ? 'good' : 'act'}">${m.pass ? 'PASS' : 'NOT YET'} · ${Math.round(m.pct * 10) / 10}% (pass ${p.passPct}%)</span>
         <h2 style="margin:8px 0 6px">${m.pass ? 'You cleared the bar.' : `${Math.max(0, Math.ceil((p.passPct / 100) * m.max - m.score))} more marks needed.`}</h2>
-        <p class="muted" style="margin:0">${m.correct} right · ${m.wrong} wrong (−${lost} marks to negative marking) · ${m.skipped} skipped · time used ${fmtLeft(m.used)}</p>
+        <p class="muted" style="margin:0">${m.correct} right · ${m.wrong} wrong${lost ? ` (−${lost} marks lost to negative marking)` : ''} · ${m.skipped} skipped · time used ${fmtLeft(m.used)}</p>
         ${weakest.length ? `<p class="small" style="margin-top:8px">Focus next on: ${weakest.map((w) => `<a href="#/x/${ex}/practice/m-${w.mod.id}">Module ${w.mod.id} (${esc(w.mod.name)})</a>`).join(' and ')}.</p>` : ''}
         ${m.wrong > m.correct / 3 ? '<p class="small note red">Many wrong answers: with −25% marking, skip a question if you cannot eliminate at least two options.</p>' : ''}
       </div>

@@ -1,6 +1,6 @@
-# IA Exam Prep — NISM Series X-A & X-B
+# Fiducia — SEBI RIA guide & NISM X-A / X-B exam prep
 
-A free, static study site for the NISM **Investment Adviser** certifications:
+A free, static site that explains how to become a **SEBI Registered Investment Adviser (RIA)** — eligibility, the five-step registration path, MFD vs RIA, deposits, fee caps and rules of practice — and prepares candidates for the NISM **Investment Adviser** certifications:
 
 - **X-A (Level 1)** and **X-B (Level 2)** — 40 chapter notes, ~960 original practice questions and 30 original case studies.
 - Drills for what makes these papers hard: **statement (I/II) questions**, **one-word “tweak” questions** and **Excel-style numericals**.

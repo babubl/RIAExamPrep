@@ -83,7 +83,7 @@ function route() {
   if (!keepScroll) window.scrollTo(0, 0);
   keepScroll = false; fresh = false;
   const titleEl = main.querySelector('h1,h2');
-  document.title = titleEl ? `${titleEl.textContent.trim()} · IA Exam Prep` : 'IA Exam Prep';
+  document.title = titleEl ? `${titleEl.textContent.trim().replace(/\.$/, '')} · Fiducia` : 'Fiducia — SEBI RIA exam prep';
 }
 let afterRender = null; let keepScroll = false;
 let fresh = true;
@@ -108,9 +108,9 @@ function viewHome() {
     return `<a class="card examcard" href="#/x/${ex}">
       <span class="spread"><span class="kicker">${esc(p.code)}</span>${active ? '<span class="pill ok">Mock in progress</span>' : ''}</span>
       <span class="code">${esc(p.name)}</span>
-      <span class="small muted">${p.modules.length} modules · 20 chapters · ${s.total} questions · ${BANK[ex].cases.length} case studies</span>
+      <span class="small muted">${ex === 'xa' ? 'Financial planning basics, products, portfolio theory, regulation and ethics.' : 'Insurance, retirement, tax, estate planning, behavioural finance and case-based advice.'}</span>
       <span class="g3" style="gap:10px">
-        <span class="stat"><span class="l">Attempted</span><span class="v">${s.seen}</span></span>
+        <span class="stat"><span class="l">Attempted</span><span class="v">${s.seen}/${s.total}</span></span>
         <span class="stat"><span class="l">Accuracy</span><span class="v">${pct(s.acc)}</span></span>
         <span class="stat"><span class="l">Last mock</span><span class="v">${last ? `${Math.round(last.pct)}%` : '—'}</span></span>
       </span>
@@ -121,40 +121,119 @@ function viewHome() {
   const totalQ = allQuestions('xa').length + allQuestions('xb').length;
   const totalCases = BANK.xa.cases.length + BANK.xb.cases.length;
   const pat = (ex) => { const p = PATTERNS[ex]; return `<tr><th scope="row">${esc(p.short)}</th><td class="r">${p.mcq}</td><td>${p.caseSets.map((c) => `${c.count} × 5 Qs × ${c.w}`).join(' + ')}</td><td class="r">${p.totalMarks}</td><td class="r">${p.minutes}</td><td class="r">${p.passPct}%</td><td class="r">−${p.negative * 100}%</td></tr>`; };
+  const faq = [
+    ['I am a mutual fund distributor (MFD). Can I become an RIA?', 'Yes. Pass X-A and X-B, meet the qualification rule and register with SEBI. Once registered, advice must be paid for only by the client. SEBI’s FAQ says an individual IA, their family and their clients generally cannot receive distribution services from or through one another, so plan how you will separate or wind down distribution for advisory clients.'],
+    ['Do CAs, CFPs or CFA charterholders need X-A and X-B?', 'The IA Regulations require the individual adviser (or principal officer) and everyone who gives advice to hold the NISM certification SEBI specifies — currently X-A and X-B. A CA, CS or CMA advising only incidentally to their professional work is exempt from registration, but anyone practising as an investment adviser must register and certify.'],
+    ['Does SEBI registration expire?', 'No. The certificate stays valid until SEBI suspends or cancels it, as long as the periodic fees are paid. Your NISM certificates are valid for 3 years, so renew them before they lapse.'],
+    ['Can I keep my job and advise part-time?', 'Yes, as a part-time investment adviser, if your other work is not related to securities and does not involve handling client money. You can have at most 75 clients and must use the words “part-time investment adviser” with clients.'],
+    ['Can I advise NRIs?', 'Yes, and you need SEBI registration to do so. Only advice given exclusively to clients based outside India who are not NRIs or PIOs is outside the regulations.'],
+    ['How much can I earn?', 'You set your fees within SEBI’s caps for individual and HUF clients: up to 2.5% of assets under advice a year, or up to ₹1,51,000 a year per family on a fixed fee. For example, 80 families paying ₹30,000 a year is ₹24 lakh of fees before costs and GST.'],
+  ];
   return `
-  <section class="hero"><div class="wrap grid">
+  <section class="hero rhero"><div class="wrap grid">
     <div>
-      <span class="kicker">NISM Investment Adviser certification · Level 1 &amp; Level 2</span>
-      <h1 style="margin-top:8px">Practise for X&#8209;A and X&#8209;B the way the exam is set.</h1>
-      <p class="lead">Chapter notes and mind maps, drills on the question types that cost the most marks, and full 150-mark mocks with a 3-hour timer and negative marking. Free, no sign-up.</p>
-      <div class="row"><a class="btn" href="#/x/xa">Start X-A · Level 1</a><a class="btn ghost" href="#/x/xb">Start X-B · Level 2</a></div>
+      <span class="kicker">SEBI Registered Investment Adviser · career &amp; exam guide</span>
+      <h1 style="margin-top:8px">Become a SEBI Registered Investment Adviser.</h1>
+      <p class="lead">Advise clients for a fee, act only in their interest and take no commission. Fiducia explains how the RIA route works — eligibility, exams, registration and the rules of practice — and prepares you for NISM X&#8209;A and X&#8209;B with notes, mind maps, drills and full mock exams.</p>
+      <div class="row"><a class="btn" href="#/x/xa">Start exam prep</a><a class="btn ghost" href="#/" data-act="goto" data-to="path">See the 5-step path</a></div>
       <div class="facts"><div><b>${totalQ}</b><span>practice questions</span></div><div><b>${totalCases}</b><span>case studies</span></div><div><b>42</b><span>mind maps</span></div><div><b>150</b><span>marks per mock</span></div></div>
     </div>
-    <div class="card flat">
-      <span class="kicker">Where candidates lose marks</span>
-      <ul class="list" style="margin-top:6px">
-        <li><b>Statement questions.</b> Judge Statement I and II separately before reading the options. <span class="row" style="gap:12px;margin-top:2px"><a href="#/x/xa/practice/multi">X-A drill</a><a href="#/x/xb/practice/multi">X-B drill</a></span></li>
-        <li><b>Tweaked wording.</b> One word such as NOT, only or always changes the answer. <span class="row" style="gap:12px;margin-top:2px"><a href="#/x/xa/practice/trap">X-A drill</a><a href="#/x/xb/practice/trap">X-B drill</a></span></li>
-        <li><b>Numericals.</b> Set them up as Excel functions; the test centre gives you a spreadsheet. <span class="row" style="gap:12px;margin-top:2px"><a href="#/x/xa/practice/calc">X-A drill</a><a href="#/x/xb/practice/calc">X-B drill</a><a href="#/calc">Calculator</a></span></li>
-        <li><b>Guessing.</b> A wrong answer costs 25% of its marks. Skip unless you can rule out two options.</li>
+    <div class="card glance">
+      <span class="kicker">RIA at a glance</span>
+      <dl>
+        <dt>Regulator</dt><dd>SEBI · SEBI (Investment Advisers) Regulations, 2013</dd>
+        <dt>Exams</dt><dd>NISM X-A (Level 1) and X-B (Level 2), each 150 marks, valid 3 years</dd>
+        <dt>Supervision</dt><dd>IAASB — BSE Ltd administers and supervises IAs</dd>
+        <dt>Deposit</dt><dd>₹1 lakh for up to 150 clients, rising to ₹10 lakh</dd>
+        <dt>Fee caps</dt><dd>2.5% of assets under advice, or ₹1,51,000 a year per family</dd>
+        <dt>Income</dt><dd>Only from the client — no commissions or referral fees</dd>
+      </dl>
+    </div>
+  </div></section>
+
+  <section class="band tight"><div class="wrap">
+    <div class="head"><span class="kicker">What an RIA is</span><h2>An adviser who works only for the client</h2>
+      <p>A Registered Investment Adviser is registered with SEBI to give investment advice for a fee. The law makes the RIA a fiduciary: advice must suit the client, conflicts must be disclosed, and the RIA may not take money from anyone except the client for the products recommended.</p></div>
+    <div class="g3">
+      <div class="tile"><b>Fiduciary duty</b><p class="small muted">Act in the client’s best interest, disclose every conflict, keep an arm’s-length relationship with any other business.</p></div>
+      <div class="tile"><b>Fee-only income</b><p class="small muted">No commission, trail or incentive from any product maker. Clients typically invest through direct plans.</p></div>
+      <div class="tile"><b>Whole-picture advice</b><p class="small muted">Financial planning, asset allocation, retirement, insurance needs, tax-aware investing and portfolio reviews.</p></div>
+    </div>
+  </div></section>
+
+  <section class="band tight alt"><div class="wrap">
+    <div class="head"><span class="kicker">Coming from mutual fund distribution?</span><h2>MFD vs RIA</h2><p>Many RIAs start as mutual fund distributors. The two roles differ in who pays you and what you are allowed to do.</p></div>
+    <div class="scroll"><table class="tbl cmp"><thead><tr><th></th><th>Mutual fund distributor (MFD)</th><th>Registered investment adviser (RIA)</th></tr></thead><tbody>
+      <tr><th scope="row">Registration</th><td>ARN with AMFI</td><td>Certificate from SEBI; enlisted with IAASB (BSE)</td></tr>
+      <tr><th scope="row">Certification</th><td>NISM Series V-A</td><td>NISM Series X-A and X-B</td></tr>
+      <tr><th scope="row">Paid by</th><td>Fund houses — commission and trail on regular plans</td><td>The client only — fixed fee or % of assets under advice</td></tr>
+      <tr><th scope="row">Scope</th><td>Mutual fund schemes it distributes; advice only incidental to distribution</td><td>Advice across securities and financial planning</td></tr>
+      <tr><th scope="row">Standard owed</th><td>Suitability as a distributor</td><td>Fiduciary — best interest of the client, with risk profiling before advice</td></tr>
+      <tr><th scope="row">Typical plan type</th><td>Regular plans</td><td>Direct plans</td></tr>
+      <tr><th scope="row">Deposit / capital</th><td>None</td><td>Lien-marked deposit from ₹1 lakh</td></tr>
+    </tbody></table></div>
+  </div></section>
+
+  <section class="band tight" id="path"><div class="wrap">
+    <div class="head"><span class="kicker">How to become an RIA</span><h2>The path in five steps</h2></div>
+    <ol class="steps5">
+      <li><b>Meet the qualification</b><p class="small muted">A graduate or post-graduate degree, or a professional qualification, in finance, commerce, economics, accountancy, business management, banking, insurance or a similar field; or NISM’s one-year PGP (Investment Advisory); or a CFA charter.</p></li>
+      <li><b>Pass NISM X-A and X-B</b><p class="small muted">Both papers: 150 marks, 3 hours, 60% to pass, 25% negative marking. <a href="#/x/xa">Prepare for X-A</a> · <a href="#/x/xb">X-B</a></p></li>
+      <li><b>Arrange the deposit</b><p class="small muted">A scheduled-bank deposit (or liquid / overnight fund units) lien-marked to IAASB: ₹1 lakh for up to 150 clients.</p></li>
+      <li><b>Apply to SEBI</b><p class="small muted">Apply on the SEBI Intermediary Portal. Individuals and firms pay ₹2,000 application fee and ₹3,000 registration fee.</p></li>
+      <li><b>Enlist and start practising</b><p class="small muted">Enlist with IAASB, publish your disclosures and website, sign client agreements, and profile every client before advising.</p></li>
+    </ol>
+  </div></section>
+
+  <section class="band tight alt"><div class="wrap">
+    <div class="head"><span class="kicker">Ways to register</span><h2>Individual, part-time or firm</h2></div>
+    <div class="g3">
+      <div class="tile"><span class="pill blue">Individual RIA</span><p class="small" style="margin-top:8px">You give the advice yourself. Once you cross <b>300 clients</b> or <b>₹3 crore</b> of fees in a financial year, you must move to a non-individual registration.</p></div>
+      <div class="tile"><span class="pill blue">Part-time RIA</span><p class="small" style="margin-top:8px">Alongside another profession not related to securities (for example a doctor, lawyer or teacher). Up to <b>75 clients</b>; same qualification and exams; disclose the other activity.</p></div>
+      <div class="tile"><span class="pill blue">Non-individual RIA</span><p class="small" style="margin-top:8px">A company, LLP or partnership. The principal officer and every person giving advice must meet the qualification and hold X-A and X-B. Name must include “investment adviser”.</p></div>
+    </div>
+    <div class="scroll" style="margin-top:16px"><table class="tbl"><thead><tr><th>Clients served (max in previous FY)</th><th class="r">Deposit</th></tr></thead><tbody>
+      <tr><td>Up to 150</td><td class="r">₹1,00,000</td></tr><tr><td>151 – 300</td><td class="r">₹2,00,000</td></tr><tr><td>301 – 1,000</td><td class="r">₹5,00,000</td></tr><tr><td>1,001 and above</td><td class="r">₹10,00,000</td></tr>
+    </tbody></table></div>
+  </div></section>
+
+  <section class="band tight"><div class="wrap">
+    <div class="head"><span class="kicker">Rules of practice</span><h2>What SEBI expects once you are registered</h2></div>
+    <div class="g2">
+      <ul class="list">
+        <li><b>Fees.</b> For individual and HUF clients: up to 2.5% of assets under advice or ₹1,51,000 a year per family. Advance fees at most one year. You may switch fee modes at any time within the caps.</li>
+        <li><b>Client agreement.</b> Signed before advice, with the Most Important Terms and Conditions (MITC). In person or by Aadhaar e-sign.</li>
+        <li><b>Know your client and risk profile.</b> Collect KYC, assess willingness and ability to bear loss, share the profile with the client, and update it periodically.</li>
+        <li><b>Suitability.</b> Advice must match the client’s risk profile and goals. No trades without the client’s specific consent.</li>
+      </ul>
+      <ul class="list">
+        <li><b>Your own trades.</b> Do not trade against your advice for 15 days; if your view changes, tell clients 24 hours before you act.</li>
+        <li><b>Segregation.</b> Keep advisory and distribution apart at the family or group level.</li>
+        <li><b>Records and audit.</b> Keep records for at least 5 years; get an annual compliance audit by a CA, CS or CMA within 6 months of the financial year end.</li>
+        <li><b>AI and grievances.</b> Disclose how far you use AI tools — you stay responsible for the advice. Resolve complaints; clients can escalate through SCORES and online dispute resolution (ODR).</li>
       </ul>
     </div>
   </div></section>
-  <section class="band tight"><div class="wrap">
-    <div class="spread" style="margin-bottom:14px"><h2>Choose your paper</h2><a class="small" href="#/about">Full exam pattern</a></div>
+
+  <section class="band tight alt" id="prep"><div class="wrap">
+    <div class="spread" style="margin-bottom:14px"><div><span class="kicker">Prepare for the exams</span><h2>NISM X-A and X-B</h2></div><a class="small" href="#/about">Full exam pattern</a></div>
     <div class="g2">${card('xa')}${card('xb')}</div>
     <div class="scroll" style="margin-top:16px"><table class="tbl"><thead><tr><th>Paper</th><th class="r">MCQs</th><th>Case studies</th><th class="r">Marks</th><th class="r">Minutes</th><th class="r">Pass</th><th class="r">Wrong answer</th></tr></thead><tbody>${pat('xa')}${pat('xb')}</tbody></table></div>
-  </div></section>
-  <section class="band tight" style="padding-bottom:48px"><div class="wrap">
-    <h2 style="margin-bottom:14px">A study plan that works</h2>
-    <ol class="steps4">
+    <ol class="steps4" style="margin-top:16px">
       <li><b>See the map, then read</b><p class="small muted">Start each chapter with its mind map, then the notes with the numbers you must remember.</p></li>
       <li><b>Practise by chapter</b><p class="small muted">Instant feedback with the reasoning and the section to revisit.</p></li>
-      <li><b>Fix weak spots</b><p class="small muted">Wrong answers collect in “My mistakes”. Module accuracy shows where marks leak.</p></li>
+      <li><b>Drill the hard types</b><p class="small muted">Statement I/II questions, one-word tweaks and Excel-style numericals.</p></li>
       <li><b>Sit full mocks</b><p class="small muted">Exact pattern, timer, question palette and negative marking. Aim for 70%+ before exam day.</p></li>
     </ol>
+  </div></section>
+
+  <section class="band tight"><div class="wrap narrow">
+    <div class="head"><span class="kicker">Questions people ask</span><h2>FAQ</h2></div>
+    <div class="faq">${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
+    <p class="tiny" style="margin-top:22px">Sources: SEBI FAQs on Investment Advisers (August 2025); SEBI Guidelines for Investment Advisers (circular dated 8 January 2025); SEBI circular on deposits in liquid and overnight funds (12 August 2025); SEBI (Investment Advisers) Regulations, 2013 as summarised in the NISM X-A workbook (September 2026). Rules change — always check sebi.gov.in before you apply. This page is general information, not legal advice.</p>
   </div></section>`;
 }
+ACTIONS.goto = (el) => { const t = document.getElementById(el.dataset.to); if (t) t.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); };
 
 // ---------------- Exam hub ----------------
 function viewHub(ex) {
